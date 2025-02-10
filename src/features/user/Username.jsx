@@ -1,6 +1,7 @@
 function Username() {
   return (
-    <div className="hidden text-sm font-semibold md:block">Toma Milićević</div>
+    //md:block
+    <div className="hidden text-sm font-semibold">Toma Milićević</div>
   );
 }
 
