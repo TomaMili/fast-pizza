@@ -1,6 +1,6 @@
 // Test ID: IIDSAT
 
-import { useLoaderData } from "react-router-dom";
+import { useFetcher, useLoaderData } from "react-router-dom";
 import { getOrder } from "../../services/apiRestaurant";
 import {
   calcMinutesLeft,
@@ -8,9 +8,21 @@ import {
   formatDate,
 } from "../../utils/helpers";
 import OrderItem from "../order/OrderItem";
+import { useEffect } from "react";
+import UpdateOrder from "./UpdateOrder";
 
 function Order() {
   const order = useLoaderData();
+
+  const fetcher = useFetcher();
+
+  useEffect(
+    function () {
+      if (!fetcher.data && fetcher.state === "idle") fetcher.load("/menu");
+    },
+    [fetcher],
+  );
+
   // Everyone can search for all orders, so for privacy reasons we're gonna gonna exclude names or address, these are only for the restaurant staff
   const {
     id,
@@ -39,22 +51,31 @@ function Order() {
           </span>
         </div>
       </div>
-      <ul className="divide-y divide-stone-300 border-t border-b border-stone-500">
-        {cart.map((item) => (
-          <OrderItem item={item} key={item.id} />
-        ))}
-      </ul>
+
       <div className="flex flex-wrap items-center justify-between gap-2 bg-stone-100 px-5 py-6">
         <p className="font-medium">
           {deliveryIn >= 0
             ? `Only ${calcMinutesLeft(estimatedDelivery)} minutes left 😃`
             : "Order should have arrived"}
         </p>
+
         <p className="text-xs text-stone-500">
           (Estimated delivery: {formatDate(estimatedDelivery)})
         </p>
       </div>
-
+      <ul className="divide-y divide-stone-300 border-t border-b border-stone-500">
+        {cart.map((item) => (
+          <OrderItem
+            item={item}
+            key={item.pizzaId}
+            ingredients={
+              fetcher?.data?.find((el) => el.id === item.pizzaId)
+                ?.ingredients ?? []
+            }
+            isLoadingIngredients={fetcher.state === "loading"}
+          />
+        ))}
+      </ul>
       <div className="space-y-2 bg-stone-100 px-5 py-6">
         <p className="text-sm font-medium text-stone-500">
           Price pizza: {formatCurrency(orderPrice)}
@@ -68,6 +89,7 @@ function Order() {
           To pay on delivery: {formatCurrency(orderPrice + priorityPrice)}
         </p>
       </div>
+      {!priority && <UpdateOrder order={order} />}
     </div>
   );
 }

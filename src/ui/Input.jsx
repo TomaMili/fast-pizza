@@ -6,6 +6,7 @@ function Input({
   onChange,
   className,
   defaultValue,
+  disabled,
 }) {
   return (
     <input
@@ -16,6 +17,7 @@ function Input({
       defaultValue={defaultValue}
       value={value}
       onChange={onChange}
+      disabled={disabled}
       required
     />
   );
